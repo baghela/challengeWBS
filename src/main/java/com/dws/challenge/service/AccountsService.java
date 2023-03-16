@@ -49,12 +49,52 @@ public class AccountsService {
    */
   public void transfer(String fromAccount, String toAccount, BigDecimal amount) {
 
-    this.accountsRepository.withdraw(fromAccount, amount);
-    this.accountsRepository.deposit(toAccount, amount);
+    synchronized (fromAccount)
+    {
+      synchronized (toAccount)
+      {
+        withdraw(fromAccount, amount);
+        deposit(toAccount, amount);
+      }
+    }
+
     this.notificationService.notifyAboutTransfer(accountsRepository.getAccount(fromAccount),"Your transaction of amount " +amount
               +" has been successfully transferred to "+ toAccount + ". Please connect with our customer service if you have not done this transaction" );
     this.notificationService.notifyAboutTransfer(accountsRepository.getAccount(toAccount),"You have received " +amount
             +" from "+ fromAccount + ". Please connect with our customer service if you don't know the sender or this transaction is suspected fraud" );
 
+  }
+
+
+  public void  withdraw(String accountId, BigDecimal amount) {
+
+
+    BigDecimal amountBeforeTransfer= this.accountsRepository.getAccount(accountId).getBalance();
+    if(amountBeforeTransfer.compareTo(amount)==-1)
+    {
+      throw  new InsufficientFundException("There is not enough funds on the account"+accountId);
+    }
+    else if(amount.compareTo(BigDecimal.ZERO)<=0)
+    {
+      throw new IncorrectAmountException("Amount to be transferred should be more than 0");
+    }
+    else
+    {
+        this.accountsRepository.getAccount(accountId).setBalance(amountBeforeTransfer.subtract(amount));
+    }
+
+  }
+  //This method will be used  to deposit  money to  user account.
+
+  public void deposit(String accountId, BigDecimal amount) {
+    BigDecimal amountBeforeTransfer= this.accountsRepository.getAccount(accountId).getBalance();
+    if(amount.compareTo(BigDecimal.ZERO)<=0)
+    {
+      throw new IncorrectAmountException("Amount to be transferred should be more than 0");
+    }
+    else
+    {
+       this.getAccountsRepository().getAccount(accountId).setBalance(amountBeforeTransfer.add(amount));
+      }
   }
 }
