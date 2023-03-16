@@ -93,8 +93,8 @@ class AccountsServiceTest {
     thread1.start();
     thread1.join();
     thread2.join();
-    assertEquals(this.accountsService.getAccount(fromAccount).getBalance(),(BigDecimal.valueOf(900)),"Balance left  should be 500");
-    assertEquals(this.accountsService.getAccount(toAccount).getBalance(),(BigDecimal.valueOf(4100)),"Balance left should be  4500");
+    assertEquals(this.accountsService.getAccount(fromAccount).getBalance(),(BigDecimal.valueOf(900)),"Balance left  should be 900");
+    assertEquals(this.accountsService.getAccount(toAccount).getBalance(),(BigDecimal.valueOf(4100)),"Balance left should be  4100");
 
 
   }
