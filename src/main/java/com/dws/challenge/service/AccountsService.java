@@ -128,6 +128,8 @@ public class AccountsService {
         {
             log.info("Deposit to recepient account failed due to "+ex.getMessage());
             senderAccount.setBalance(amountBeforeTransfer.add(amount));
+            //This is added so notification should not be sent to users
+            throw  new RuntimeException("Deposit failed to recipient account");
         }
 
     }
