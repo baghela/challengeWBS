@@ -49,9 +49,11 @@ public class AccountsService {
    */
   public void transfer(String fromAccount, String toAccount, BigDecimal amount) {
 
-    synchronized (fromAccount)
+    Account acc1= this.accountsRepository.getAccount(getLarger(fromAccount,toAccount));
+    Account acc2=  this.accountsRepository.getAccount(getSmaller(fromAccount,toAccount));
+    synchronized (acc1)
     {
-      synchronized (toAccount)
+      synchronized (acc2)
       {
         withdraw(fromAccount, amount);
         deposit(toAccount, amount);
@@ -63,6 +65,30 @@ public class AccountsService {
     this.notificationService.notifyAboutTransfer(accountsRepository.getAccount(toAccount),"You have received " +amount
             +" from "+ fromAccount + ". Please connect with our customer service if you don't know the sender or this transaction is suspected fraud" );
 
+  }
+
+  private String getSmaller(String fromAccount, String toAccount) {
+
+    if(Long.valueOf(fromAccount.replace("Id-",""))<Long.valueOf(toAccount.replace("Id-","")))
+    {
+      return fromAccount;
+    }
+    else
+    {
+      return  toAccount;
+    }
+  }
+
+  private String getLarger(String fromAccount, String toAccount) {
+
+    if(Long.valueOf(fromAccount.replace("Id-",""))<Long.valueOf(toAccount.replace("Id-","")))
+    {
+      return toAccount;
+    }
+    else
+    {
+      return toAccount;
+    }
   }
 
 
