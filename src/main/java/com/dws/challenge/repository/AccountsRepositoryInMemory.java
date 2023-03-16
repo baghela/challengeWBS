@@ -35,46 +35,6 @@ public class AccountsRepositoryInMemory implements AccountsRepository {
     }
 
     //This method will be used to deduct money from user account.
-    @Override
-    public void  withdraw(String accountId, BigDecimal amount) {
 
-
-           BigDecimal amountBeforeTransfer= accounts.get(accountId).getBalance();
-           if(amountBeforeTransfer.compareTo(amount)==-1)
-           {
-               throw  new InsufficientFundException("There is not enough funds on the account"+accountId);
-           }
-           else if(amount.compareTo(BigDecimal.ZERO)<=0)
-           {
-               throw new IncorrectAmountException("Amount to be transferred should be more than 0");
-           }
-           else
-           {
-               synchronized (accountId)
-               {
-                   accounts.get(accountId).setBalance(amountBeforeTransfer.subtract(amount));
-               }
-
-           }
-
-    }
-    //This method will be used  to deposit  money to  user account.
-    @Override
-    public void deposit(String accountId, BigDecimal amount) {
-        BigDecimal amountBeforeTransfer= accounts.get(accountId).getBalance();
-        if(amount.compareTo(BigDecimal.ZERO)<=0)
-        {
-            throw new IncorrectAmountException("Amount to be transferred should be more than 0");
-        }
-        else
-        {
-            synchronized (accountId)
-            {
-                accounts.get(accountId).setBalance(amountBeforeTransfer.add(amount));
-            }
-
-        }
-
-    }
 
 }

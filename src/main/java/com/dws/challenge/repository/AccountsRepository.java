@@ -13,7 +13,4 @@ public interface AccountsRepository {
 
   void clearAccounts();
 
-  void withdraw(String accountId, BigDecimal amount);
-
-  void deposit(String accountId, BigDecimal amount);
 }
