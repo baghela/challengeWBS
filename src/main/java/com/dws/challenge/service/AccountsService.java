@@ -18,8 +18,6 @@ public class AccountsService {
 
   @Getter
   private final AccountsRepository accountsRepository;
- @Value("${prefix}")
- String prefix;
 
   public NotificationService getNotificationService() {
     return notificationService;
@@ -51,14 +49,16 @@ public class AccountsService {
    */
   public void transfer(String fromAccount, String toAccount, BigDecimal amount) {
 
-    Account acc1= this.accountsRepository.getAccount(getLarger(fromAccount,toAccount));
-    Account acc2=  this.accountsRepository.getAccount(getSmaller(fromAccount,toAccount));
+    Account senderAccount= this.accountsRepository.getAccount(fromAccount);
+    Account receiverAccount= this.accountsRepository.getAccount(toAccount);
+    Account acc1= getLarger(senderAccount,receiverAccount);
+    Account acc2=  getSmaller(senderAccount,receiverAccount);
     synchronized (acc1)
     {
       synchronized (acc2)
       {
-        withdraw(fromAccount, amount);
-        deposit(toAccount, amount);
+              withdraw(senderAccount, amount);
+              deposit(receiverAccount, amount,senderAccount);
       }
     }
 
@@ -69,60 +69,67 @@ public class AccountsService {
 
   }
 
-  private String getSmaller(String fromAccount, String toAccount) {
-
-    if(Long.valueOf(fromAccount.replace(prefix,""))<Long.valueOf(toAccount.replace("Id-","")))
+  private Account getSmaller(Account fromAccount, Account toAccount)
+  {
+    int a =fromAccount.getAccountId().compareTo(toAccount.getAccountId());
+    if(a<0)
     {
-      return fromAccount;
+        return toAccount;
     }
     else
-    {
-      return  toAccount;
-    }
+        return fromAccount;
   }
 
-  private String getLarger(String fromAccount, String toAccount) {
-
-    if(Long.valueOf(fromAccount.replace(prefix,""))<Long.valueOf(toAccount.replace("Id-","")))
-    {
-      return toAccount;
-    }
-    else
-    {
-      return toAccount;
-    }
+  private Account getLarger(Account fromAccount, Account toAccount) {
+      int a =fromAccount.getAccountId().compareTo(toAccount.getAccountId());
+      if(a>0)
+      {
+          return fromAccount;
+      }
+      else
+          return toAccount;
   }
 
 
-  public void  withdraw(String accountId, BigDecimal amount) {
+  public void  withdraw(Account senderAccount, BigDecimal amount) {
 
-
-    BigDecimal amountBeforeTransfer= this.accountsRepository.getAccount(accountId).getBalance();
+    BigDecimal amountBeforeTransfer= senderAccount.getBalance();
     if(amountBeforeTransfer.compareTo(amount)==-1)
     {
-      throw  new InsufficientFundException("There is not enough funds on the account"+accountId);
+        throw  new InsufficientFundException("There is not enough funds on the account"+senderAccount.getAccountId());
     }
     else if(amount.compareTo(BigDecimal.ZERO)<=0)
     {
-      throw new IncorrectAmountException("Amount to be transferred should be more than 0");
+        throw new IncorrectAmountException("Amount to be transferred should be more than 0");
+
     }
     else
     {
-        this.accountsRepository.getAccount(accountId).setBalance(amountBeforeTransfer.subtract(amount));
+        senderAccount.setBalance(amountBeforeTransfer.subtract(amount));
+
     }
 
   }
   //This method will be used  to deposit  money to  user account.
 
-  public void deposit(String accountId, BigDecimal amount) {
-    BigDecimal amountBeforeTransfer= this.accountsRepository.getAccount(accountId).getBalance();
+  public void deposit(Account receiverAccount, BigDecimal amount,Account senderAccount) {
+    BigDecimal amountBeforeTransfer= receiverAccount.getBalance();
     if(amount.compareTo(BigDecimal.ZERO)<=0)
     {
-      throw new IncorrectAmountException("Amount to be transferred should be more than 0");
+       throw new IncorrectAmountException("Amount to be transferred should be more than 0");
     }
     else
     {
-       this.getAccountsRepository().getAccount(accountId).setBalance(amountBeforeTransfer.add(amount));
-      }
+        try
+        {
+            receiverAccount.setBalance(amountBeforeTransfer.add(amount));
+        }
+        catch (RuntimeException ex)
+        {
+            log.info("Deposit to recepient account failed due to "+ex.getMessage());
+            senderAccount.setBalance(amountBeforeTransfer.add(amount));
+        }
+
+    }
   }
 }
