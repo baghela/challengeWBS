@@ -7,6 +7,7 @@ import com.dws.challenge.repository.AccountsRepository;
 import lombok.Getter;
 import lombok.extern.java.Log;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
@@ -17,7 +18,8 @@ public class AccountsService {
 
   @Getter
   private final AccountsRepository accountsRepository;
-
+ @Value("${prefix}")
+ String prefix;
 
   public NotificationService getNotificationService() {
     return notificationService;
@@ -69,7 +71,7 @@ public class AccountsService {
 
   private String getSmaller(String fromAccount, String toAccount) {
 
-    if(Long.valueOf(fromAccount.replace("Id-",""))<Long.valueOf(toAccount.replace("Id-","")))
+    if(Long.valueOf(fromAccount.replace(prefix,""))<Long.valueOf(toAccount.replace("Id-","")))
     {
       return fromAccount;
     }
@@ -81,7 +83,7 @@ public class AccountsService {
 
   private String getLarger(String fromAccount, String toAccount) {
 
-    if(Long.valueOf(fromAccount.replace("Id-",""))<Long.valueOf(toAccount.replace("Id-","")))
+    if(Long.valueOf(fromAccount.replace(prefix,""))<Long.valueOf(toAccount.replace("Id-","")))
     {
       return toAccount;
     }
