@@ -16,6 +16,7 @@ import com.dws.challenge.exception.InsufficientFundException;
 import com.dws.challenge.service.AccountsService;
 import com.dws.challenge.service.EmailNotificationService;
 import com.dws.challenge.service.NotificationService;
+import com.sun.tools.javac.Main;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
@@ -58,8 +59,7 @@ class AccountsServiceTest {
   }
 
   @Test
-  void given_transferValidAmount_ThenSuccess()
-  {
+  void given_transferValidAmount_ThenSuccess()  {
 
       String fromAccount = "Id-" + System.nanoTime();
       Account accountSender = new Account(fromAccount,BigDecimal.valueOf(1000));
@@ -68,9 +68,33 @@ class AccountsServiceTest {
       this.accountsService.createAccount(accountSender);
       this.accountsService.createAccount(accountReceiver);
       this.accountsService.setNotificationService(Mockito.mock(EmailNotificationService.class));
-      this.accountsService.transfer(fromAccount,toAccount,BigDecimal.valueOf(500));
+      accountsService.transfer(fromAccount,toAccount,BigDecimal.valueOf(500));
       assertEquals(this.accountsService.getAccount(fromAccount).getBalance(),(BigDecimal.valueOf(500)),"Balance left  should be 500");
       assertEquals(this.accountsService.getAccount(toAccount).getBalance(),(BigDecimal.valueOf(4500)),"Balance left should be  4500");
+
+
+  }
+
+
+  @Test
+  void given_transferValidAmountSimultaneous_ThenSuccess() throws InterruptedException {
+
+    String fromAccount = "Id-" + System.nanoTime();
+    Account accountSender = new Account(fromAccount,BigDecimal.valueOf(1000));
+    String toAccount = "Id-" + System.nanoTime();
+    Account accountReceiver = new Account(toAccount,BigDecimal.valueOf(4000));
+    this.accountsService.createAccount(accountSender);
+    this.accountsService.createAccount(accountReceiver);
+    this.accountsService.setNotificationService(Mockito.mock(EmailNotificationService.class));
+
+    Thread thread1= new Thread(()->accountsService.transfer(fromAccount,toAccount,BigDecimal.valueOf(500)));
+    Thread thread2=  new Thread(()->accountsService.transfer(toAccount,fromAccount,BigDecimal.valueOf(400)));
+    thread2.start();
+    thread1.start();
+    thread1.join();
+    thread2.join();
+    assertEquals(this.accountsService.getAccount(fromAccount).getBalance(),(BigDecimal.valueOf(900)),"Balance left  should be 500");
+    assertEquals(this.accountsService.getAccount(toAccount).getBalance(),(BigDecimal.valueOf(4100)),"Balance left should be  4500");
 
 
   }
