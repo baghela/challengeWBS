@@ -11,6 +11,8 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
+import java.util.SortedSet;
+import java.util.TreeSet;
 
 @Service
 @Log
@@ -51,8 +53,11 @@ public class AccountsService {
 
     Account senderAccount= this.accountsRepository.getAccount(fromAccount);
     Account receiverAccount= this.accountsRepository.getAccount(toAccount);
-    Account acc1= getLarger(senderAccount,receiverAccount);
-    Account acc2=  getSmaller(senderAccount,receiverAccount);
+    SortedSet<String> accounts= new TreeSet<>();
+    accounts.add(senderAccount.getAccountId());
+    accounts.add(receiverAccount.getAccountId());
+    String acc1= (String) accounts.toArray()[1];
+    String acc2= (String) accounts.toArray()[0];
     synchronized (acc1)
     {
       synchronized (acc2)
@@ -68,28 +73,6 @@ public class AccountsService {
             +" from "+ fromAccount + ". Please connect with our customer service if you don't know the sender or this transaction is suspected fraud" );
 
   }
-
-  private Account getSmaller(Account fromAccount, Account toAccount)
-  {
-    int a =fromAccount.getAccountId().compareTo(toAccount.getAccountId());
-    if(a<0)
-    {
-        return toAccount;
-    }
-    else
-        return fromAccount;
-  }
-
-  private Account getLarger(Account fromAccount, Account toAccount) {
-      int a =fromAccount.getAccountId().compareTo(toAccount.getAccountId());
-      if(a>0)
-      {
-          return fromAccount;
-      }
-      else
-          return toAccount;
-  }
-
 
   public void  withdraw(Account senderAccount, BigDecimal amount) {
 
