@@ -67,9 +67,9 @@ public class AccountsService {
       }
     }
 
-    this.notificationService.notifyAboutTransfer(accountsRepository.getAccount(fromAccount),"Your transaction of amount " +amount
+    this.notificationService.notifyAboutTransfer(senderAccount,"Your transaction of amount " +amount
               +" has been successfully transferred to "+ toAccount + ". Please connect with our customer service if you have not done this transaction" );
-    this.notificationService.notifyAboutTransfer(accountsRepository.getAccount(toAccount),"You have received " +amount
+    this.notificationService.notifyAboutTransfer(receiverAccount,"You have received " +amount
             +" from "+ fromAccount + ". Please connect with our customer service if you don't know the sender or this transaction is suspected fraud" );
 
   }
