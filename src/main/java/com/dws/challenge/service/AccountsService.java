@@ -56,8 +56,8 @@ public class AccountsService {
     SortedSet<String> accounts= new TreeSet<>();
     accounts.add(senderAccount.getAccountId());
     accounts.add(receiverAccount.getAccountId());
-    String acc1= (String) accounts.toArray()[1];
-    String acc2= (String) accounts.toArray()[0];
+    String acc1= accounts.last();
+    String acc2= accounts.first();
     synchronized (acc1)
     {
       synchronized (acc2)
